@@ -6,16 +6,35 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Manga;
-use App\Models\Genre;
+use App\Models\Chapter; // Pastikan Model Chapter di-import
 
 class MangaController extends Controller
 {
+    // Method Index yang sudah kita buat sebelumnya
     public function index()
     {
-        // Mengambil semua data komik beserta relasi genre-nya
         $mangas = Manga::with('genres')->latest()->get();
-        
-        // Menampilkan halaman index dan mengirimkan variabel $mangas
         return view('manga.index', compact('mangas'));
+    }
+
+    // Menampilkan Halaman Detail Komik
+    public function show($id)
+    {
+        // Mencari komik berdasarkan ID beserta relasi genre dan chapternya
+        $manga = Manga::with(['genres', 'chapters' => function($query) {
+            // Mengurutkan chapter dari yang terbaru
+            $query->orderBy('created_at', 'desc'); 
+        }])->findOrFail($id);
+
+        return view('manga.show', compact('manga'));
+    }
+
+    // Menampilkan Halaman Baca Chapter
+    public function read($id)
+    {
+        // Mencari chapter berdasarkan ID beserta relasi halaman dan komiknya
+        $chapter = Chapter::with(['pages', 'manga'])->findOrFail($id);
+        
+        return view('manga.read', compact('chapter'));
     }
 }

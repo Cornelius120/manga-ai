@@ -27,7 +27,7 @@
                     @endforeach
                 </div>
                 <p class="card-text small text-truncate">{{ $manga->synopsis }}</p>
-                <a href="#" class="btn btn-outline-dark btn-sm w-100">Baca Sekarang</a>
+                <a href="{{ route('manga.show', $manga->id) }}" class="btn btn-outline-dark btn-sm w-100">Baca Sekarang</a>
             </div>
         </div>
     </div>
