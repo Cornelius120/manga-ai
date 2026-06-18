@@ -18,4 +18,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Mengubah route halaman utama web
+Route::get('/', [MangaController::class, 'index'])->name('home');
 Route::get('/', [MangaController::class, 'index'])->name('manga.index');

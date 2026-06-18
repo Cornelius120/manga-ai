@@ -1,46 +1,54 @@
 <?php
 
+// Kode ini diletakkan di database/seeders/MangaSeeder.php
+
 namespace Database\Seeders;
 
-use App\Models\Manga;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
+use App\Models\Manga;
+use App\Models\Genre;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class MangaSeeder extends Seeder
 {
     public function run(): void
     {
-        $data = [
-            [
-                'title' => 'One Piece',
-                'synopsis' => 'Kisah petualangan seru seorang remaja berkekuatan karet yang mengumpulkan kru untuk mencari harta karun legendaris dan menjadi raja bajak laut.',
-                'genre' => 'Adventure, Action'
-            ],
-            [
-                'title' => 'Naruto',
-                'synopsis' => 'Seorang ninja muda yang dijauhi desanya berjuang untuk mendapatkan pengakuan dan menjadi pemimpin desa bernama Hokage.',
-                'genre' => 'Action, Fantasy'
-            ],
-            [
-                'title' => 'Death Note',
-                'synopsis' => 'Siswa SMA jenius yang menemukan buku catatan kematian milik dewa pencabut nyawa dan berencana menghapus kejahatan di dunia.',
-                'genre' => 'Mystery, Supernatural'
-            ],
-            [
-                'title' => 'Jujutsu Kaisen',
-                'synopsis' => 'Seorang siswa SMA yang memiliki kekuatan fisik luar biasa secara tidak sengaja memakan kutipan jari iblis dan masuk ke sekolah penyihir jujutsu.',
-                'genre' => 'Dark Fantasy, Action'
-            ]
-        ];
+        // 1. Membuat Akun Admin dan User Biasa
+        User::create([
+            'name' => 'Admin Miyamura',
+            'email' => 'admin@manga.test',
+            'password' => Hash::make('password123'),
+            'role' => 'admin',
+        ]);
 
-        foreach ($data as $item) {
-            Manga::create([
-                'title' => $item['title'],
-                'slug' => Str::slug($item['title']),
-                'synopsis' => $item['synopsis'],
-                'genre' => $item['genre'],
-                // cover_image dikosongkan dulu untuk tes
-            ]);
-        }
+        User::create([
+            'name' => 'Pembaca Setia',
+            'email' => 'user@manga.test',
+            'password' => Hash::make('password123'),
+            'role' => 'user',
+        ]);
+
+        // 2. Membuat Data Genre
+        $action = Genre::create(['name' => 'Action', 'slug' => 'action']);
+        $romance = Genre::create(['name' => 'Romance', 'slug' => 'romance']);
+        $fantasy = Genre::create(['name' => 'Fantasy', 'slug' => 'fantasy']);
+
+        // 3. Membuat Data Komik & Sinopsis untuk diuji AI
+        $manga1 = Manga::create([
+            'title' => 'Ninja Rebirth',
+            'author' => 'Kishimoto',
+            'synopsis' => 'Seorang pembunuh bayaran legendaris dikhianati oleh organisasinya. Ia bereinkarnasi ke dunia sihir dan bertekad menggunakan ilmu bela diri rahasianya untuk melindungi teman-teman barunya dari ancaman monster iblis.',
+            'status' => 'ongoing',
+        ]);
+        $manga1->genres()->attach([$action->id, $fantasy->id]);
+
+        $manga2 = Manga::create([
+            'title' => 'My School Love Story',
+            'author' => 'Miyamura',
+            'synopsis' => 'Kisah manis tentang seorang gadis pemalu yang tidak sengaja menjatuhkan buku hariannya. Buku itu ditemukan oleh siswa paling populer di sekolah, yang ternyata memiliki rahasia dan hobi yang sama dengannya.',
+            'status' => 'completed',
+        ]);
+        $manga2->genres()->attach([$romance->id]);
     }
 }
