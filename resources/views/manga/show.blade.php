@@ -3,8 +3,12 @@
 @section('content')
 <div class="row">
     <div class="col-md-4 mb-4">
+    @if($manga->cover_image)
+        <img src="{{ asset('storage/' . $manga->cover_image) }}" class="img-fluid rounded shadow-sm w-100" alt="Cover {{ $manga->title }}">
+    @else
         <img src="https://via.placeholder.com/400x550?text=Cover+Komik" class="img-fluid rounded shadow-sm w-100" alt="Cover {{ $manga->title }}">
-    </div>
+    @endif
+</div>
 
     <div class="col-md-8 mb-4">
         <h2 class="fw-bold mb-1">{{ $manga->title }}</h2>

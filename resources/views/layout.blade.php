@@ -38,7 +38,7 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 @if(Auth::user()->role == 'admin')
-                                    <li><a class="dropdown-item fw-bold" href="#">Panel Admin</a></li>
+                                    <li><a class="dropdown-item fw-bold" href="{{ route('admin.manga.index') }}">Panel Admin</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                 @endif
                                 <li><a class="dropdown-item" href="/profile">Profil Saya</a></li>

@@ -35,6 +35,7 @@
                     @endforeach
                 </div>
                 <p class="card-text small text-truncate">{{ $manga->synopsis }}</p>
+                <!-- Tombol sudah menggunakan parameter slug -->
                 <a href="{{ route('manga.show', $manga->slug) }}" class="btn btn-outline-dark btn-sm w-100">Baca Sekarang</a>
             </div>
         </div>

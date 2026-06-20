@@ -7,6 +7,7 @@ use App\Http\Controllers\MangaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\AdminController;
 
 // 1. BISA DIAKSES SEMUA ORANG (Guest & Auth)
 Route::get('/', [MangaController::class, 'index'])->name('home');
@@ -25,10 +26,13 @@ Route::middleware('guest')->group(function () {
 
 // 3. HANYA UNTUK YANG SUDAH LOGIN (Auth)
 Route::middleware('auth')->group(function () {
-    // Rute Profil
-    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
-    
-    // Rute Kirim Komentar
-    Route::post('/comment/{chapter_id}', [CommentController::class, 'store'])->name('comment.store');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+    Route::post('/comment/{chapter_id}', [CommentController::class, 'store'])->name('comment.store');
+
+    // --- RUTE PANEL ADMIN ---
+    Route::get('/admin/manga', [AdminController::class, 'index'])->name('admin.manga.index');
+    Route::get('/admin/manga/create', [AdminController::class, 'create'])->name('admin.manga.create');
+    Route::post('/admin/manga', [AdminController::class, 'store'])->name('admin.manga.store');
+    Route::delete('/admin/manga/{id}', [AdminController::class, 'destroy'])->name('admin.manga.destroy');
 });
