@@ -41,7 +41,7 @@
                                     <li><a class="dropdown-item fw-bold" href="#">Panel Admin</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                 @endif
-                                <li><a class="dropdown-item" href="#">Profil Saya</a></li>
+                                <li><a class="dropdown-item" href="/profile">Profil Saya</a></li>
                                 <li>
                                     <form action="/logout" method="POST">
                                         @csrf

@@ -31,15 +31,15 @@
         @if($manga->chapters->count() > 0)
             <div class="list-group shadow-sm">
                 @foreach($manga->chapters as $chapter)
-                    <a href="{{ route('chapter.read', $chapter->id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
-                        <div>
-                            <span class="fw-bold">{{ $chapter->chapter_number }}</span>
-                            @if($chapter->title)
-                                <span class="text-muted ms-2">- {{ $chapter->title }}</span>
-                            @endif
-                        </div>
-                        <span class="badge bg-dark rounded-pill">Baca</span>
-                    </a>
+                    <a href="{{ route('chapter.read', ['slug' => $manga->slug, 'chapter_number' => $chapter->chapter_number]) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+    <div>
+        <span class="fw-bold">Chapter {{ $chapter->chapter_number }}</span>
+        @if($chapter->title)
+            <span class="text-muted ms-2">- {{ $chapter->title }}</span>
+        @endif
+    </div>
+    <span class="badge bg-dark rounded-pill">Baca</span>
+</a>
                 @endforeach
             </div>
         @else

@@ -18,22 +18,26 @@ class MangaController extends Controller
     }
 
     // Menampilkan Halaman Detail Komik
-    public function show($id)
+    public function show($slug)
     {
-        // Mencari komik berdasarkan ID beserta relasi genre dan chapternya
+        // Mencari komik berdasarkan slug (bukan ID)
         $manga = Manga::with(['genres', 'chapters' => function($query) {
-            // Mengurutkan chapter dari yang terbaru
             $query->orderBy('created_at', 'desc'); 
-        }])->findOrFail($id);
+        }])->where('slug', $slug)->firstOrFail();
 
         return view('manga.show', compact('manga'));
     }
 
     // Menampilkan Halaman Baca Chapter
-    public function read($id)
+    public function read($slug, $chapter_number)
     {
-        // Mencari chapter berdasarkan ID beserta relasi halaman dan komiknya
-        $chapter = Chapter::with(['pages', 'manga'])->findOrFail($id);
+        $manga = Manga::where('slug', $slug)->firstOrFail();
+        
+        // Tambahkan 'comments.user' di dalam array with()
+        $chapter = Chapter::with(['pages', 'manga', 'comments.user'])
+            ->where('manga_id', $manga->id)
+            ->where('chapter_number', $chapter_number)
+            ->firstOrFail();
         
         return view('manga.read', compact('chapter'));
     }

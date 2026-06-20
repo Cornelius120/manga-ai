@@ -37,6 +37,7 @@ class MangaSeeder extends Seeder
         // 3. Membuat Data Komik & Sinopsis untuk diuji AI
         $manga1 = Manga::create([
             'title' => 'Ninja Rebirth',
+            'slug' => 'ninja-rebirth',
             'author' => 'Kishimoto',
             'synopsis' => 'Seorang pembunuh bayaran legendaris dikhianati oleh organisasinya. Ia bereinkarnasi ke dunia sihir dan bertekad menggunakan ilmu bela diri rahasianya untuk melindungi teman-teman barunya dari ancaman monster iblis.',
             'status' => 'ongoing',
@@ -45,6 +46,7 @@ class MangaSeeder extends Seeder
 
         $manga2 = Manga::create([
             'title' => 'My School Love Story',
+            'slug' => 'my-school-love-story',
             'author' => 'Miyamura',
             'synopsis' => 'Kisah manis tentang seorang gadis pemalu yang tidak sengaja menjatuhkan buku hariannya. Buku itu ditemukan oleh siswa paling populer di sekolah, yang ternyata memiliki rahasia dan hobi yang sama dengannya.',
             'status' => 'completed',
