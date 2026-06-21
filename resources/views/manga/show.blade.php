@@ -44,6 +44,12 @@
     </div>
     <span class="badge bg-dark rounded-pill">Baca</span>
 </a>
+@auth
+    <form action="{{ route('bookmark.toggle', $manga->id) }}" method="POST" class="mt-2">
+        @csrf
+        <button type="submit" class="btn btn-outline-warning w-100 fw-bold">🔖 Simpan ke Bookmark</button>
+    </form>
+@endauth
                 @endforeach
             </div>
         @else

@@ -24,8 +24,23 @@
 
 <div class="row justify-content-center mt-4 mb-5">
     <div class="col-md-8 d-flex justify-content-between">
-        <button class="btn btn-dark" disabled>&larr; Chapter Sebelumnya</button>
-        <button class="btn btn-dark" disabled>Chapter Selanjutnya &rarr;</button>
+        
+        @if($prevChapter)
+            <a href="{{ route('chapter.read', ['slug' => $chapter->manga->slug, 'chapter_number' => $prevChapter->chapter_number]) }}" class="btn btn-dark">
+                &larr; Chapter Sebelumnya
+            </a>
+        @else
+            <button class="btn btn-secondary" disabled>&larr; Chapter Sebelumnya</button>
+        @endif
+
+        @if($nextChapter)
+            <a href="{{ route('chapter.read', ['slug' => $chapter->manga->slug, 'chapter_number' => $nextChapter->chapter_number]) }}" class="btn btn-dark">
+                Chapter Selanjutnya &rarr;
+            </a>
+        @else
+            <button class="btn btn-secondary" disabled>Chapter Selanjutnya &rarr;</button>
+        @endif
+
     </div>
 </div>
 

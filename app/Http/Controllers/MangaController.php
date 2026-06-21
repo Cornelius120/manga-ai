@@ -33,12 +33,34 @@ class MangaController extends Controller
     {
         $manga = Manga::where('slug', $slug)->firstOrFail();
         
-        // Tambahkan 'comments.user' di dalam array with()
         $chapter = Chapter::with(['pages', 'manga', 'comments.user'])
             ->where('manga_id', $manga->id)
             ->where('chapter_number', $chapter_number)
             ->firstOrFail();
+            
+        // Mencari chapter sebelumnya (berdasarkan nomor chapter yang lebih kecil)
+        $prevChapter = Chapter::where('manga_id', $manga->id)
+            ->where('chapter_number', '<', $chapter_number)
+            ->orderBy('chapter_number', 'desc')
+            ->first();
+
+        // Mencari chapter selanjutnya (berdasarkan nomor chapter yang lebih besar)
+        $nextChapter = Chapter::where('manga_id', $manga->id)
+            ->where('chapter_number', '>', $chapter_number)
+            ->orderBy('chapter_number', 'asc')
+            ->first();
         
-        return view('manga.read', compact('chapter'));
+        
+        // --- TAMBAHKAN BLOK INI ---
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            \App\Models\ReadingHistory::updateOrCreate(
+                ['user_id' => \Illuminate\Support\Facades\Auth::id(), 'manga_id' => $manga->id],
+                ['chapter_id' => $chapter->id, 'updated_at' => now()]
+            );
+        }
+        // --------------------------
+        
+        // Jangan lupa kirim $prevChapter dan $nextChapter ke tampilan (view)
+        return view('manga.read', compact('chapter', 'prevChapter', 'nextChapter'));
     }
 }
