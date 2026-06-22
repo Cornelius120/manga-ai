@@ -14,11 +14,10 @@ class MangaController extends Controller
     public function index()
     {
         // Mengambil komik beserta relasi genrenya, diurutkan dari yang terbaru
-        // paginate(12) artinya kita menampilkan 12 komik per halaman
         $mangas = Manga::with('genres')->latest()->paginate(12);
         
-        // Ganti 'welcome' menjadi 'manga.index' jika halaman utamamu bernama itu
-        return view('welcome', compact('mangas')); 
+        // UBAH BARIS INI: Arahkan ke 'manga.index'
+        return view('manga.index', compact('mangas')); 
     }
 
     // Menampilkan Halaman Detail Komik

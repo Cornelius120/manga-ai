@@ -1,4 +1,4 @@
-<!-- Kode ini diletakkan di resources/views/welcome.blade.php -->
+<!-- Kode ini diletakkan di resources/views/manga/index.blade.php -->
 @extends('layout')
 
 @section('content')
@@ -9,47 +9,53 @@
         <h4 class="text-white fw-bold border-bottom border-secondary pb-2">Latest Update</h4>
     </div>
 
-    <!-- Grid Katalog Komik -->
+    <!-- Grid Katalog Komik ala MangaDex -->
     <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3">
         @forelse($mangas as $manga)
             @php
-                // Logika Cerdas: Menentukan bendera berdasarkan Genre
-                $flag = '🇯🇵'; // Default: Jepang (Manga)
+                // Logika Bendera ala MangaDex (Teks Singkatan Negara)
+                $flag = 'JP'; // Default: Jepang (Manga)
                 
                 if($manga->genres) {
-                    // Mengambil semua nama genre milik komik ini dan mengubahnya ke huruf kecil
                     $genreNames = $manga->genres->pluck('name')->map(fn($name) => strtolower($name))->toArray();
                     
                     if (in_array('manhwa', $genreNames)) {
-                        $flag = '🇰🇷'; // Jika ada genre Manhwa, set Korea Selatan
+                        $flag = 'KR'; // Korea
                     } elseif (in_array('manhua', $genreNames)) {
-                        $flag = '🇨🇳'; // Jika ada genre Manhua, set China
+                        $flag = 'CN'; // China
                     }
                 }
             @endphp
 
             <div class="col">
-                <div class="card bg-dark border-secondary h-100 manga-card position-relative overflow-hidden shadow-sm" style="border-radius: 10px;">
-                    
-                    <!-- Ikon Bendera Negara di Pojok Kanan Atas -->
-                    <div class="position-absolute top-0 end-0 p-1 m-2 rounded text-center lh-1 shadow" style="background-color: rgba(0,0,0,0.7); z-index: 10; font-size: 1.2rem;">
-                        {{ $flag }}
-                    </div>
-
-                    <!-- Gambar Cover -->
-                    <img src="{{ asset('storage/' . $manga->cover_image) }}" class="card-img-top" alt="Cover" style="height: 240px; object-fit: cover;">
-
-                    <div class="card-body p-2 d-flex flex-column" style="background-color: #1e1e1e;">
-                        <!-- Judul Komik (Maksimal 2 Baris menggunakan CSS Line Clamp) -->
-                        <h6 class="text-white fw-bold mb-auto mt-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.9rem; min-height: 2.7em;">
-                            {{ $manga->title }}
-                        </h6>
+                <!-- Seluruh kartu dijadikan tautan agar mudah diklik -->
+                <a href="{{ route('manga.show', $manga->slug) }}" class="text-decoration-none">
+                    <div class="card bg-transparent border-0 h-100 manga-card position-relative overflow-hidden">
                         
-                        <!-- Nama Author sengaja DIHAPUS sesuai permintaan -->
-                        
-                        <a href="{{ route('manga.show', $manga->slug) }}" class="btn btn-outline-primary btn-sm w-100 mt-3 rounded-pill fw-bold">Baca</a>
+                        <!-- Wadah Cover dengan Rasio Tetap (Aspect Ratio 2:3) -->
+                        <div class="position-relative rounded shadow-sm" style="overflow: hidden; aspect-ratio: 2/3;">
+                            
+                            <!-- Ikon Negara (Kode) di Pojok Kanan Atas -->
+                            <div class="position-absolute top-0 end-0 p-1 m-1 rounded fw-bold text-white shadow-sm" style="background-color: rgba(0,0,0,0.6); z-index: 10; font-size: 0.75rem; letter-spacing: 1px; backdrop-filter: blur(2px);">
+                                {{ $flag }}
+                            </div>
+
+                            <!-- Gambar Cover -->
+                            <img src="{{ asset('storage/' . $manga->cover_image) }}" class="w-100 h-100 cover-img" alt="Cover" style="object-fit: cover; transition: transform 0.3s ease;">
+                            
+                            <!-- Efek Gelap saat di-hover -->
+                            <div class="overlay position-absolute top-0 start-0 w-100 h-100 bg-dark" style="opacity: 0; transition: opacity 0.3s ease;"></div>
+                        </div>
+
+                        <!-- Detail Judul (Di luar area gambar agar rapi) -->
+                        <div class="pt-2">
+                            <h6 class="text-white fw-bold mb-0 title-clamp">
+                                {{ $manga->title }}
+                            </h6>
+                        </div>
+
                     </div>
-                </div>
+                </a>
             </div>
         @empty
             <div class="col-12 text-center text-muted py-5 w-100">
@@ -58,15 +64,39 @@
         @endforelse
     </div>
 
-    <!-- Tombol Navigasi Pagination (Panah) -->
+    <!-- Tombol Navigasi Pagination -->
     <div class="col-md-12 d-flex justify-content-center mt-5 pagination-dark">
         {{ $mangas->links() }}
     </div>
 
 </div>
 
-<!-- CSS Kustom untuk membuat Pagination menyesuaikan dengan Dark Mode -->
+<!-- CSS Kustom untuk Efek MangaDex -->
 <style>
+    /* Menghaluskan efek zoom saat kartu disentuh kursor */
+    .manga-card:hover .cover-img {
+        transform: scale(1.05);
+    }
+    .manga-card:hover .overlay {
+        opacity: 0.4 !important;
+    }
+    .manga-card:hover .title-clamp {
+        color: #0d6efd !important; /* Judul menyala biru saat disentuh */
+    }
+
+    /* Kunci utama agar teks terpotong sempurna tanpa bocor */
+    .title-clamp {
+        display: -webkit-box; 
+        -webkit-line-clamp: 2; 
+        -webkit-box-orient: vertical; 
+        overflow: hidden; 
+        text-overflow: ellipsis;
+        font-size: 0.9rem; 
+        line-height: 1.4; /* Atur jarak antar baris */
+        max-height: 2.8em; /* Kunci tingginya persis untuk 2 baris (1.4 * 2) */
+    }
+    
+    /* Tema Gelap untuk Pagination */
     .pagination-dark .pagination {
         --bs-pagination-bg: #1e1e1e;
         --bs-pagination-border-color: #333;
