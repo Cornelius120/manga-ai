@@ -1,7 +1,5 @@
 <?php
 
-// Kode ini diletakkan di app/Models/Comment.php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,18 +9,33 @@ class Comment extends Model
 {
     use HasFactory;
 
-    // Mengizinkan pengisian massal kecuali kolom id
-    protected $guarded = ['id'];
+    // Pastikan semua kolom ini tertulis di dalam array!
+    protected $fillable = [
+        'user_id', 
+        'manga_id', 
+        'chapter_id', 
+        'parent_id', 
+        'comment_text'
+    ];
 
-    // Relasi balik ke tabel User (Siapa yang nulis komentar ini)
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relasi balik ke tabel Chapter (Komentar ini ada di chapter mana)
+    public function manga()
+    {
+        return $this->belongsTo(Manga::class);
+    }
+
     public function chapter()
     {
         return $this->belongsTo(Chapter::class);
+    }
+
+    // Relasi untuk mengambil balasan komentar
+    public function replies()
+    {
+        return $this->hasMany(Comment::class, 'parent_id');
     }
 }
