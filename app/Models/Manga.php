@@ -11,17 +11,19 @@ class Manga extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id']; // Mengizinkan semua kolom diisi kecuali ID
+    // Tambahkan artist, theme, demographic, dan alternative_titles ke dalam array ini
+    protected $fillable = [
+        'title', 'slug', 'alternative_titles', 'author', 'artist', 
+        'synopsis', 'status', 'theme', 'demographic', 'cover_image'
+    ];
 
-    // Relasi ke tabel Chapter (1 Komik punya banyak Chapter)
-    public function chapters()
-    {
-        return $this->hasMany(Chapter::class);
-    }
-
-    // Relasi ke tabel Genre (Many to Many)
     public function genres()
     {
         return $this->belongsToMany(Genre::class, 'manga_genres');
+    }
+
+    public function chapters()
+    {
+        return $this->hasMany(Chapter::class);
     }
 }

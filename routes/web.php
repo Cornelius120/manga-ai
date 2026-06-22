@@ -57,4 +57,32 @@ Route::get('/user/{id}', [\App\Http\Controllers\ProfileController::class, 'showP
     // --- RUTE TAMBAH CHAPTER ADMIN ---
     Route::get('/admin/manga/{manga_id}/chapter/create', [AdminChapterController::class, 'create'])->name('admin.chapter.create');
     Route::post('/admin/manga/{manga_id}/chapter', [AdminChapterController::class, 'store'])->name('admin.chapter.store');
+    // Kode ini diletakkan di routes/web.php (Di dalam grup admin)
+// Kode ini diletakkan di routes/web.php (Di dalam grup admin)
+Route::get('/admin/chapter', [\App\Http\Controllers\AdminChapterController::class, 'index'])->name('admin.chapter.index');
+// Rute untuk mengelola Chapter
+Route::get('/admin/chapter/{id}/edit', [\App\Http\Controllers\AdminChapterController::class, 'edit'])->name('admin.chapter.edit');
+Route::put('/admin/chapter/{id}', [\App\Http\Controllers\AdminChapterController::class, 'update'])->name('admin.chapter.update');
+Route::delete('/admin/chapter/{id}', [\App\Http\Controllers\AdminChapterController::class, 'destroy'])->name('admin.chapter.destroy');
+// Rute khusus untuk menghapus satu gambar/halaman tertentu
+Route::delete('/admin/page/{id}', [\App\Http\Controllers\AdminChapterController::class, 'destroyPage'])->name('admin.page.destroy');
+// Rute untuk menampilkan halaman form edit
+Route::get('/admin/manga/{id}/edit', [\App\Http\Controllers\AdminController::class, 'edit'])->name('admin.manga.edit');
+// Rute untuk memproses pembaruan data (menggunakan PUT)
+Route::put('/admin/manga/{id}', [\App\Http\Controllers\AdminController::class, 'update'])->name('admin.manga.update');
+// Rute untuk mengeksekusi penghapusan komik (menggunakan DELETE)
+Route::delete('/admin/manga/{id}', [\App\Http\Controllers\AdminController::class, 'destroy'])->name('admin.manga.destroy');
+// Kode ini diletakkan di routes/web.php (Di dalam grup admin)
+Route::get('/admin/comment', [\App\Http\Controllers\AdminCommentController::class, 'index'])->name('admin.comment.index');
+Route::delete('/admin/comment/{id}', [\App\Http\Controllers\AdminCommentController::class, 'destroy'])->name('admin.comment.destroy');
+// Kode ini diletakkan di routes/web.php (Di dalam grup admin)
+Route::get('/admin/ad', [\App\Http\Controllers\AdminAdController::class, 'index'])->name('admin.ad.index');
+Route::get('/admin/ad/create', [\App\Http\Controllers\AdminAdController::class, 'create'])->name('admin.ad.create');
+Route::post('/admin/ad', [\App\Http\Controllers\AdminAdController::class, 'store'])->name('admin.ad.store');
+Route::get('/admin/ad/{id}/edit', [\App\Http\Controllers\AdminAdController::class, 'edit'])->name('admin.ad.edit');
+Route::put('/admin/ad/{id}', [\App\Http\Controllers\AdminAdController::class, 'update'])->name('admin.ad.update');
+Route::delete('/admin/ad/{id}', [\App\Http\Controllers\AdminAdController::class, 'destroy'])->name('admin.ad.destroy');
+// Rute Pengaturan Web
+Route::get('/admin/setting', [\App\Http\Controllers\AdminSettingController::class, 'index'])->name('admin.setting.index');
+Route::put('/admin/setting/update', [\App\Http\Controllers\AdminSettingController::class, 'update'])->name('admin.setting.update');
 });

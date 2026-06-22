@@ -1,13 +1,18 @@
+<!-- Kode ini diletakkan di resources/views/manga/show.blade.php -->
 @extends('layout')
 
 @section('content')
+<!-- 1. HERO SECTION (Ala MangaDex & Webtoon) -->
 <div class="position-relative overflow-hidden mb-5 shadow-sm" style="border-radius: 12px; background-color: #121212;">
     
+    <!-- Efek Background Blur -->
     <div class="position-absolute w-100 h-100" style="background-image: url('{{ $manga->cover_image ? asset('storage/' . $manga->cover_image) : 'https://via.placeholder.com/400x550' }}'); background-size: cover; background-position: center; filter: blur(25px); opacity: 0.25; z-index: 1;"></div>
     
+    <!-- Overlay Gradasi Gelap -->
     <div class="position-relative p-4 p-md-5" style="z-index: 2; background: linear-gradient(to right, rgba(18,18,18,1) 0%, rgba(18,18,18,0.6) 100%);">
         <div class="row align-items-center">
             
+            <!-- Kolom Kiri: Cover & Action -->
             <div class="col-md-3 col-lg-3 mb-4 mb-md-0 text-center">
                 <img src="{{ $manga->cover_image ? asset('storage/' . $manga->cover_image) : 'https://via.placeholder.com/400x550' }}" class="img-fluid rounded shadow w-100 mb-3 border border-secondary border-opacity-50" style="aspect-ratio: 2/3; object-fit: cover;" alt="Cover {{ $manga->title }}">
                 
@@ -21,22 +26,66 @@
                 @endauth
             </div>
 
+            <!-- Kolom Kanan: Detail Informasi -->
             <div class="col-md-9 col-lg-9 text-white">
-                <h1 class="fw-bold mb-2">{{ $manga->title }}</h1>
-                <h5 class="text-secondary mb-4">{{ $manga->author }}</h5>
+                <!-- Judul Utama -->
+                <h1 class="fw-bold mb-1">{{ $manga->title }}</h1>
                 
+                <!-- Alternative Titles -->
+                @if($manga->alternative_titles)
+                    <h6 class="text-secondary mb-3 fst-italic">{{ $manga->alternative_titles }}</h6>
+                @else
+                    <div class="mb-3"></div> <!-- Spacing jika tidak ada judul alternatif -->
+                @endif
+                
+                <!-- Info Author & Artist -->
+                <div class="d-flex flex-wrap align-items-center mb-4" style="font-size: 0.95rem;">
+                    <div class="me-4 mb-2 mb-md-0">
+                        <span class="text-secondary fw-bold">✍️ Author:</span> 
+                        <span class="text-light ms-1">{{ $manga->author ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-secondary fw-bold">🎨 Artist:</span> 
+                        <span class="text-light ms-1">{{ $manga->artist ?? '-' }}</span>
+                    </div>
+                </div>
+                
+                <!-- Kapsul Status, Demografi, Tema & Genre -->
                 <div class="d-flex flex-wrap gap-2 mb-4">
-                    <span class="badge bg-{{ $manga->status == 'ongoing' ? 'success' : 'primary' }} rounded-pill px-3 py-2 text-uppercase fw-bold" style="letter-spacing: 0.5px;">
+                    <!-- Status -->
+                    @php
+                        $statusColor = 'primary'; // Default completed
+                        if($manga->status == 'ongoing') $statusColor = 'success';
+                        if($manga->status == 'hiatus') $statusColor = 'warning text-dark';
+                    @endphp
+                    <span class="badge bg-{{ $statusColor }} rounded-pill px-3 py-2 text-uppercase fw-bold" style="letter-spacing: 0.5px;">
                         {{ $manga->status }}
                     </span>
+
+                    <!-- Demographic -->
+                    @if($manga->demographic)
+                        <span class="badge bg-light text-dark rounded-pill px-3 py-2 fw-bold">
+                            👥 {{ $manga->demographic }}
+                        </span>
+                    @endif
+
+                    <!-- Theme -->
+                    @if($manga->theme)
+                        @foreach(explode(',', $manga->theme) as $theme)
+                            <span class="badge bg-secondary rounded-pill px-3 py-2 border border-light border-opacity-25">{{ trim($theme) }}</span>
+                        @endforeach
+                    @endif
+
+                    <!-- Genres -->
                     @foreach($manga->genres as $genre)
                         <span class="badge bg-dark rounded-pill px-3 py-2 border border-secondary">{{ $genre->name }}</span>
                     @endforeach
                 </div>
 
+                <!-- Sinopsis -->
                 <h5 class="fw-bold mb-2 text-white border-bottom border-secondary pb-2 d-inline-block">Sinopsis</h5>
                 <p class="text-light mt-2" style="line-height: 1.8; text-align: justify; font-size: 0.95rem;">
-                    {{ $manga->synopsis }}
+                    {{ $manga->synopsis ?? 'Sinopsis belum tersedia untuk komik ini.' }}
                 </p>
             </div>
 
@@ -44,6 +93,7 @@
     </div>
 </div>
 
+<!-- 2. DAFTAR CHAPTER -->
 <div class="row mb-5 justify-content-center">
     <div class="col-md-10">
         <h4 class="fw-bold mb-4 text-white border-bottom border-secondary pb-2">Daftar Chapter</h4>
@@ -70,6 +120,7 @@
     </div>
 </div>
 
+<!-- 3. BAGIAN KOMENTAR DETAIL KOMIK -->
 <div class="row mb-5 justify-content-center">
     <div class="col-md-10">
         @php 
@@ -100,6 +151,7 @@
 
         <div class="list-group mt-4">
             @forelse($mangaComments as $comment)
+            <!-- ID Deep Linking -->
             <div class="list-group-item px-4 py-3 bg-transparent text-white border-secondary mb-3 rounded" style="background-color: #16181f !important;" id="comment-{{ $comment->id }}">
                 <div class="d-flex w-100 justify-content-between align-items-center mb-3">
                     <div class="d-flex align-items-center">
@@ -125,6 +177,7 @@
     </div>
 </div>
 
+<!-- CSS Tambahan untuk Efek Interaktif Chapter -->
 <style>
     .chapter-hover:hover {
         background-color: #2a2a2a !important;

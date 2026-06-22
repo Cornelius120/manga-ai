@@ -12,6 +12,33 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminChapterController extends Controller
 {
+
+public function index(Request $request)
+    {
+        // 1. Memori jumlah data yang ditampilkan
+        $perPage = $request->input('per_page', session('admin_chapter_per_page', 10));
+        session(['admin_chapter_per_page' => $perPage]);
+
+        // 2. Tangkap kata kunci pencarian
+        $search = $request->input('search');
+
+        // 3. Bangun Query (Tarik data chapter beserta relasi judul komiknya)
+        $query = Chapter::with('manga')->latest();
+
+        // 4. Saring berdasarkan judul chapter atau judul komik
+        if ($search) {
+            $query->where('title', 'like', '%' . $search . '%')
+                  ->orWhereHas('manga', function($q) use ($search) {
+                      $q->where('title', 'like', '%' . $search . '%');
+                  });
+        }
+
+        // 5. Eksekusi dengan pagination
+        $chapters = $query->paginate($perPage);
+
+        return view('admin.chapter.index', compact('chapters', 'search', 'perPage'));
+    }
+
     // Proteksi Admin
     public function __construct()
     {
@@ -69,5 +96,89 @@ class AdminChapterController extends Controller
         }
 
         return redirect()->route('admin.manga.index')->with('success', 'Chapter ' . $chapter->chapter_number . ' beserta ' . ($pageNumber - 1) . ' halaman berhasil diunggah!');
+    }
+
+    // Menampilkan halaman edit chapter beserta gambar-gambarnya
+    public function edit($id)
+    {
+        // Menarik data chapter beserta halamannya, diurutkan dari nomor terkecil
+        $chapter = \App\Models\Chapter::with(['pages' => function($query) {
+            $query->orderBy('page_number', 'asc');
+        }])->findOrFail($id);
+
+        return view('admin.chapter.edit', compact('chapter'));
+    }
+
+    // Memproses pembaruan chapter dan penambahan gambar baru
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'chapter_number' => 'required|numeric',
+            'title' => 'nullable|string|max:255',
+            'pages.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048' // Validasi untuk gambar-gambar baru
+        ]);
+
+        $chapter = \App\Models\Chapter::findOrFail($id);
+        
+        // Update informasi dasar
+        $chapter->update([
+            'chapter_number' => $request->chapter_number,
+            'title' => $request->title,
+        ]);
+
+        // Jika admin mengunggah gambar-gambar baru
+        if ($request->hasFile('pages')) {
+            // Cari nomor urut halaman terakhir untuk menyambung urutan
+            $lastPage = $chapter->pages()->orderBy('page_number', 'desc')->first();
+            $nextPageNumber = $lastPage ? $lastPage->page_number + 1 : 1;
+
+            foreach ($request->file('pages') as $file) {
+                $path = $file->store('manga_pages', 'public');
+                
+                \App\Models\Page::create([
+                    'chapter_id' => $chapter->id,
+                    'page_number' => $nextPageNumber,
+                    'image_path' => '/storage/' . $path // Format path agar langsung terbaca di frontend
+                ]);
+                
+                $nextPageNumber++;
+            }
+        }
+
+        return redirect()->route('admin.chapter.edit', $chapter->id)->with('success', 'Chapter berhasil diperbarui dan gambar ditambahkan!');
+    }
+
+    // Menghapus spesifik satu gambar dari chapter
+    public function destroyPage($id)
+    {
+        $page = \App\Models\Page::findOrFail($id);
+        
+        // Hapus file fisik dari folder storage Laragon
+        $imagePath = str_replace('/storage/', '', $page->image_path);
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($imagePath)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($imagePath);
+        }
+        
+        $page->delete();
+
+        return back()->with('success', 'Gambar berhasil dihapus dari chapter.');
+    }
+
+    // Menghapus keseluruhan chapter beserta semua gambarnya
+    public function destroy($id)
+    {
+        $chapter = \App\Models\Chapter::findOrFail($id);
+        
+        // Hapus semua file gambar fisik yang menempel di chapter ini
+        foreach($chapter->pages as $page) {
+            $imagePath = str_replace('/storage/', '', $page->image_path);
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($imagePath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($imagePath);
+            }
+        }
+        
+        $chapter->delete(); 
+        
+        return redirect()->route('admin.chapter.index')->with('success', 'Chapter beserta seluruh gambarnya berhasil dihapus!');
     }
 }

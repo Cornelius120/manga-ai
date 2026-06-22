@@ -135,16 +135,42 @@
         </div>
         <div class="offcanvas-body">
             <ul class="navbar-nav fs-5 mt-3">
-                <li class="nav-item mb-4">
-                    <a class="nav-link px-3 py-2 rounded" href="/">🏠 Beranda Katalog</a>
-                </li>
-                <li class="nav-item mb-4">
-                    <a class="nav-link px-3 py-2 rounded bg-primary text-white shadow-sm" href="{{ route('search') }}">🤖 Pencarian AI Semantik</a>
-                </li>
-                <li class="nav-item mb-4">
-    <a class="nav-link px-3 py-2 rounded text-white" href="{{ route('library') }}">📚 Library Saya</a>
-</li>
-            </ul>
+    <!-- Menu Umum -->
+    <li class="nav-item mb-2">
+        <a class="nav-link px-3 py-2 rounded" href="/">Beranda Katalog</a>
+    </li>
+    <li class="nav-item mb-2">
+        <a class="nav-link px-3 py-2 rounded bg-primary text-white shadow-sm" href="{{ route('search') }}">Pencarian AI Semantik</a>
+    </li>
+    <li class="nav-item mb-2">
+        <a class="nav-link px-3 py-2 rounded text-white" href="{{ route('library') }}">Library Saya</a>
+    </li>
+
+    <!-- Menu Khusus Admin -->
+    @auth
+        @if(Auth::user()->role == 'admin')
+            <hr class="border-secondary my-3">
+            <li class="nav-item mb-2">
+                <span class="text-warning px-3 small fw-bold">PANEL ADMIN</span>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link px-3 py-2 rounded" href="{{ route('admin.manga.index') }}">Kelola Komik</a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link px-3 py-2 rounded" href="{{ route('admin.chapter.index') }}">Kelola Chapter</a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link px-3 py-2 rounded text-secondary" href="{{ route('admin.comment.index') }}">Kelola Komentar</a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link px-3 py-2 rounded text-secondary" href="{{ route('admin.ad.index') }}">Kelola Ads/Iklan</a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link px-3 py-2 rounded text-secondary" href="{{ route('admin.setting.index') }}">Pengaturan Web</a>
+            </li>
+        @endif
+    @endauth
+</ul>
         </div>
     </div>
 
