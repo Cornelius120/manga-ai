@@ -70,19 +70,28 @@
 
         <div class="list-group list-group-flush mt-3">
             @forelse($chapter->comments->sortByDesc('created_at') as $comment)
-            <div class="list-group-item px-0 py-3">
-                <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-                    <div class="d-flex align-items-center">
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($comment->user->name) }}&background=random&size=32" class="rounded-circle me-2">
-                        <h6 class="mb-0 fw-bold">{{ $comment->user->name }}</h6>
-                        @if($comment->user->role == 'admin')
-                            <span class="badge bg-danger ms-2" style="font-size: 0.65rem;">Admin</span>
-                        @endif
-                    </div>
-                    <small class="text-muted">{{ $comment->created_at->diffForHumans() }}</small>
-                </div>
-                <p class="mb-1 ms-5 small" style="text-align: justify;">{{ $comment->comment_text }}</p>
-            </div>
+            <!-- Tambahkan id="comment-{{ $comment->id }}" pada elemen pembungkus -->
+<div class="list-group-item px-0 py-3" id="comment-{{ $comment->id }}">
+    <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+        
+        <div class="d-flex align-items-center">
+            <img src="https://ui-avatars.com/api/?name={{ urlencode($comment->user->name) }}&background=random&size=32" class="rounded-circle me-2">
+            <!-- Username nanti akan kita buat menjadi link ke Profil Publik -->
+            <a href="#" class="mb-0 fw-bold text-white text-decoration-none">{{ $comment->user->name }}</a>
+        </div>
+        
+        <div>
+            <small class="text-muted">{{ $comment->created_at->diffForHumans() }}</small>
+            
+            <!-- Tautan Share/Deep Link Komentar -->
+            <a href="{{ url()->current() }}#comment-{{ $comment->id }}" class="text-secondary small ms-2 text-decoration-none" title="Bagikan Komentar ini">🔗 Link</a>
+            
+            <a href="{{ route('comment.thread', $comment->id) }}" class="text-decoration-none text-info small ms-2 fw-bold">Lihat Balasan &rarr;</a>
+        </div>
+        
+    </div>
+    <p class="mb-1 ms-5 small" style="text-align: justify;">{{ $comment->comment_text }}</p>
+</div>
             @empty
             <p class="text-muted small text-center mt-4">Belum ada komentar. Jadilah yang pertama berkomentar!</p>
             @endforelse

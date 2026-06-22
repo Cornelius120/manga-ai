@@ -82,6 +82,14 @@
                                     <label class="form-label text-muted small fw-bold">Nama Tampilan</label>
                                     <input type="text" name="name" class="form-control text-white border-secondary" style="background-color: #252836;" value="{{ $user->name }}" required>
                                 </div>
+                                <!-- Tambahkan di bawah input Nama Tampilan pada resources/views/profile/index.blade.php -->
+<div class="mb-4 mt-4">
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="privacySwitch" name="is_private" value="1" {{ $user->is_private ? 'checked' : '' }}>
+        <label class="form-check-label text-white fw-bold ms-2" for="privacySwitch">Akun Privat</label>
+    </div>
+    <small class="text-muted">Jika diaktifkan, pengguna lain tidak bisa melihat daftar Library dan Riwayat Anda.</small>
+</div>
                                 <div class="col-md-4 mt-md-4 text-md-end">
                                     <button type="submit" class="btn btn-primary px-4 rounded-pill">Simpan Nama</button>
                                 </div>

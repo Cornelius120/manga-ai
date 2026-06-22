@@ -141,6 +141,9 @@
                 <li class="nav-item mb-4">
                     <a class="nav-link px-3 py-2 rounded bg-primary text-white shadow-sm" href="{{ route('search') }}">🤖 Pencarian AI Semantik</a>
                 </li>
+                <li class="nav-item mb-4">
+    <a class="nav-link px-3 py-2 rounded text-white" href="{{ route('library') }}">📚 Library Saya</a>
+</li>
             </ul>
         </div>
     </div>

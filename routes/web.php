@@ -45,6 +45,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/komentar/{id}', [\App\Http\Controllers\CommentController::class, 'showThread'])->name('comment.thread');
     Route::post('/komentar/{id}/reply', [\App\Http\Controllers\CommentController::class, 'reply'])->name('comment.reply');
 
+    // --- RUTE KOMENTAR KOMIK & PROFIL PUBLIK ---
+Route::post('/komik/{id}/comment', [\App\Http\Controllers\CommentController::class, 'storeMangaComment'])->name('manga.comment.store');
+Route::get('/user/{id}', [\App\Http\Controllers\ProfileController::class, 'showPublic'])->name('profile.public');
+
     // --- RUTE PANEL ADMIN ---
     Route::get('/admin/manga', [AdminController::class, 'index'])->name('admin.manga.index');
     Route::get('/admin/manga/create', [AdminController::class, 'create'])->name('admin.manga.create');

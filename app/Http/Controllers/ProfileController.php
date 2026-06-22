@@ -18,15 +18,18 @@ class ProfileController extends Controller
     }
 
     // Mengubah Nama Tampilan
+    // Mengubah Nama Tampilan & Privasi
     public function updateInfo(Request $request)
     {
         $request->validate(['name' => 'required|string|max:255']);
         
         $user = Auth::user();
         $user->name = $request->name;
+        // Jika checkbox dicentang, nilainya 1. Jika tidak, nilainya 0 (false)
+        $user->is_private = $request->has('is_private') ? true : false; 
         $user->save();
 
-        return back()->with('success', 'Nama tampilan berhasil diperbarui!');
+        return back()->with('success', 'Pengaturan akun berhasil diperbarui!');
     }
 
     // Mengubah Password dan Paksa Logout
@@ -80,5 +83,25 @@ class ProfileController extends Controller
         }
 
         return response()->json(['success' => false], 400);
+    }
+
+    // Menampilkan Profil Publik Pengguna
+    public function showPublic($id)
+    {
+        $user = \App\Models\User::findOrFail($id);
+        
+        // Cek apakah user aktif dalam 5 menit terakhir
+        $isOnline = $user->last_seen && \Carbon\Carbon::parse($user->last_seen)->diffInMinutes(now()) < 5;
+
+        $histories = [];
+        $bookmarks = [];
+        
+        // Jika akun TIDAK diprivat, tarik data riwayat dan bookmark
+        if (!$user->is_private) {
+            $histories = \App\Models\ReadingHistory::with(['manga', 'chapter'])->where('user_id', $user->id)->orderBy('updated_at', 'desc')->get();
+            $bookmarks = \App\Models\Bookmark::with('manga')->where('user_id', $user->id)->latest()->get();
+        }
+
+        return view('profile.public', compact('user', 'isOnline', 'histories', 'bookmarks'));
     }
 }
