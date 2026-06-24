@@ -40,6 +40,30 @@ class MangaController extends Controller
             ->where('manga_id', $manga->id)
             ->where('chapter_number', $chapter_number)
             ->firstOrFail();
+
+        // LOGIKA RIWAYAT BACA (HISTORY)
+        if (auth()->check()) {
+            $userId = auth()->id();
+            
+            // 1. Catat chapter yang sedang dibaca ini ke database
+            \App\Models\ReadingHistory::updateOrCreate(
+                ['user_id' => $userId, 'manga_id' => $manga->id, 'chapter_id' => $chapter->id],
+                ['updated_at' => now()]
+            );
+
+            // 2. Ambil 3 ID History terbaru untuk komik ini saja
+            $keepHistoryIds = \App\Models\ReadingHistory::where('user_id', $userId)
+                ->where('manga_id', $manga->id)
+                ->latest('updated_at')
+                ->take(3)
+                ->pluck('id');
+
+            // 3. Hapus history lama yang tidak masuk dalam 3 ID terbaru tadi
+            \App\Models\ReadingHistory::where('user_id', $userId)
+                ->where('manga_id', $manga->id)
+                ->whereNotIn('id', $keepHistoryIds)
+                ->delete();
+        }
             
         // Mencari chapter sebelumnya (berdasarkan nomor chapter yang lebih kecil)
         $prevChapter = Chapter::where('manga_id', $manga->id)

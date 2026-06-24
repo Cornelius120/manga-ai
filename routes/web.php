@@ -18,8 +18,10 @@ Route::get('/', [MangaController::class, 'index'])->name('home');
 Route::get('/komik/{slug}', [MangaController::class, 'show'])->name('manga.show');
 // Halaman Baca Chapter (Mencari berdasarkan slug komik dan nomor chapter)
 Route::get('/komik/{slug}/chapter/{chapter_number}', [MangaController::class, 'read'])->name('chapter.read');
-// --- RUTE PENCARIAN AI ---
-Route::get('/search', [SearchController::class, 'index'])->name('search');
+// Rute untuk Pencarian Filter Biasa (Standard)
+Route::get('/search', [\App\Http\Controllers\SearchController::class, 'index'])->name('search');
+// Rute untuk Pencarian Cerdas AI (Skripsi)
+Route::get('/search/ai', [\App\Http\Controllers\SearchController::class, 'aiSearch'])->name('search.ai');
 
 // 2. HANYA UNTUK YANG BELUM LOGIN (Guest)
 Route::middleware('guest')->group(function () {
@@ -49,40 +51,51 @@ Route::middleware('auth')->group(function () {
 Route::post('/komik/{id}/comment', [\App\Http\Controllers\CommentController::class, 'storeMangaComment'])->name('manga.comment.store');
 Route::get('/user/{id}', [\App\Http\Controllers\ProfileController::class, 'showPublic'])->name('profile.public');
 
-    // --- RUTE PANEL ADMIN ---
-    Route::get('/admin/manga', [AdminController::class, 'index'])->name('admin.manga.index');
-    Route::get('/admin/manga/create', [AdminController::class, 'create'])->name('admin.manga.create');
-    Route::post('/admin/manga', [AdminController::class, 'store'])->name('admin.manga.store');
-    Route::delete('/admin/manga/{id}', [AdminController::class, 'destroy'])->name('admin.manga.destroy');
-    // --- RUTE TAMBAH CHAPTER ADMIN ---
-    Route::get('/admin/manga/{manga_id}/chapter/create', [AdminChapterController::class, 'create'])->name('admin.chapter.create');
-    Route::post('/admin/manga/{manga_id}/chapter', [AdminChapterController::class, 'store'])->name('admin.chapter.store');
-    // Kode ini diletakkan di routes/web.php (Di dalam grup admin)
-// Kode ini diletakkan di routes/web.php (Di dalam grup admin)
-Route::get('/admin/chapter', [\App\Http\Controllers\AdminChapterController::class, 'index'])->name('admin.chapter.index');
-// Rute untuk mengelola Chapter
-Route::get('/admin/chapter/{id}/edit', [\App\Http\Controllers\AdminChapterController::class, 'edit'])->name('admin.chapter.edit');
-Route::put('/admin/chapter/{id}', [\App\Http\Controllers\AdminChapterController::class, 'update'])->name('admin.chapter.update');
-Route::delete('/admin/chapter/{id}', [\App\Http\Controllers\AdminChapterController::class, 'destroy'])->name('admin.chapter.destroy');
-// Rute khusus untuk menghapus satu gambar/halaman tertentu
-Route::delete('/admin/page/{id}', [\App\Http\Controllers\AdminChapterController::class, 'destroyPage'])->name('admin.page.destroy');
-// Rute untuk menampilkan halaman form edit
-Route::get('/admin/manga/{id}/edit', [\App\Http\Controllers\AdminController::class, 'edit'])->name('admin.manga.edit');
-// Rute untuk memproses pembaruan data (menggunakan PUT)
-Route::put('/admin/manga/{id}', [\App\Http\Controllers\AdminController::class, 'update'])->name('admin.manga.update');
-// Rute untuk mengeksekusi penghapusan komik (menggunakan DELETE)
-Route::delete('/admin/manga/{id}', [\App\Http\Controllers\AdminController::class, 'destroy'])->name('admin.manga.destroy');
-// Kode ini diletakkan di routes/web.php (Di dalam grup admin)
-Route::get('/admin/comment', [\App\Http\Controllers\AdminCommentController::class, 'index'])->name('admin.comment.index');
-Route::delete('/admin/comment/{id}', [\App\Http\Controllers\AdminCommentController::class, 'destroy'])->name('admin.comment.destroy');
-// Kode ini diletakkan di routes/web.php (Di dalam grup admin)
-Route::get('/admin/ad', [\App\Http\Controllers\AdminAdController::class, 'index'])->name('admin.ad.index');
-Route::get('/admin/ad/create', [\App\Http\Controllers\AdminAdController::class, 'create'])->name('admin.ad.create');
-Route::post('/admin/ad', [\App\Http\Controllers\AdminAdController::class, 'store'])->name('admin.ad.store');
-Route::get('/admin/ad/{id}/edit', [\App\Http\Controllers\AdminAdController::class, 'edit'])->name('admin.ad.edit');
-Route::put('/admin/ad/{id}', [\App\Http\Controllers\AdminAdController::class, 'update'])->name('admin.ad.update');
-Route::delete('/admin/ad/{id}', [\App\Http\Controllers\AdminAdController::class, 'destroy'])->name('admin.ad.destroy');
-// Rute Pengaturan Web
-Route::get('/admin/setting', [\App\Http\Controllers\AdminSettingController::class, 'index'])->name('admin.setting.index');
-Route::put('/admin/setting/update', [\App\Http\Controllers\AdminSettingController::class, 'update'])->name('admin.setting.update');
+    // === GRUP KEAMANAN ADMIN ===
+Route::middleware(['auth', 'admin'])->group(function () {
+    
+    // --- DASHBOARD ADMIN UTAMA ---
+    Route::get('/admin/dashboard', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    
+    // --- KELOLA KOMIK ---
+    Route::get('/admin/manga', [\App\Http\Controllers\AdminController::class, 'index'])->name('admin.manga.index');
+    Route::get('/admin/manga/create', [\App\Http\Controllers\AdminController::class, 'create'])->name('admin.manga.create');
+    Route::post('/admin/manga', [\App\Http\Controllers\AdminController::class, 'store'])->name('admin.manga.store');
+    Route::get('/admin/manga/{id}/edit', [\App\Http\Controllers\AdminController::class, 'edit'])->name('admin.manga.edit');
+    Route::put('/admin/manga/{id}', [\App\Http\Controllers\AdminController::class, 'update'])->name('admin.manga.update');
+    Route::delete('/admin/manga/{id}', [\App\Http\Controllers\AdminController::class, 'destroy'])->name('admin.manga.destroy');
+
+    // --- RUTE TAMBAH CHAPTER DARI HALAMAN KOMIK ---
+    Route::get('/admin/manga/{manga_id}/chapter/create', [\App\Http\Controllers\AdminChapterController::class, 'create'])->name('admin.chapter.create');
+    Route::post('/admin/manga/{manga_id}/chapter', [\App\Http\Controllers\AdminChapterController::class, 'store'])->name('admin.chapter.store');
+
+    // --- KELOLA CHAPTER & HALAMAN SECARA UMUM ---
+    Route::get('/admin/chapter', [\App\Http\Controllers\AdminChapterController::class, 'index'])->name('admin.chapter.index');
+    Route::get('/admin/chapter/{id}/edit', [\App\Http\Controllers\AdminChapterController::class, 'edit'])->name('admin.chapter.edit');
+    Route::put('/admin/chapter/{id}', [\App\Http\Controllers\AdminChapterController::class, 'update'])->name('admin.chapter.update');
+    Route::delete('/admin/chapter/{id}', [\App\Http\Controllers\AdminChapterController::class, 'destroy'])->name('admin.chapter.destroy');
+    Route::delete('/admin/page/{id}', [\App\Http\Controllers\AdminChapterController::class, 'destroyPage'])->name('admin.page.destroy');
+
+    // --- KELOLA KOMENTAR ---
+    Route::get('/admin/comment', [\App\Http\Controllers\AdminCommentController::class, 'index'])->name('admin.comment.index');
+    Route::delete('/admin/comment/{id}', [\App\Http\Controllers\AdminCommentController::class, 'destroy'])->name('admin.comment.destroy');
+
+    // --- KELOLA IKLAN ---
+    Route::get('/admin/ad', [\App\Http\Controllers\AdminAdController::class, 'index'])->name('admin.ad.index');
+    Route::get('/admin/ad/create', [\App\Http\Controllers\AdminAdController::class, 'create'])->name('admin.ad.create');
+    Route::post('/admin/ad', [\App\Http\Controllers\AdminAdController::class, 'store'])->name('admin.ad.store');
+    Route::get('/admin/ad/{id}/edit', [\App\Http\Controllers\AdminAdController::class, 'edit'])->name('admin.ad.edit');
+    Route::put('/admin/ad/{id}', [\App\Http\Controllers\AdminAdController::class, 'update'])->name('admin.ad.update');
+    Route::delete('/admin/ad/{id}', [\App\Http\Controllers\AdminAdController::class, 'destroy'])->name('admin.ad.destroy');
+
+    // --- PENGATURAN WEB ---
+    Route::get('/admin/setting', [\App\Http\Controllers\AdminSettingController::class, 'index'])->name('admin.setting.index');
+    Route::put('/admin/setting/update', [\App\Http\Controllers\AdminSettingController::class, 'update'])->name('admin.setting.update');
+
+    // --- KELOLA PENGGUNA ---
+    Route::get('/admin/user', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('admin.user.index');
+    Route::put('/admin/user/{id}/role', [\App\Http\Controllers\AdminUserController::class, 'updateRole'])->name('admin.user.updateRole');
+    Route::delete('/admin/user/{id}', [\App\Http\Controllers\AdminUserController::class, 'destroy'])->name('admin.user.destroy');
+
+});
 });

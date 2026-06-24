@@ -2,80 +2,195 @@
 @extends('layout')
 
 @section('content')
-<div class="row mt-4 mb-5 justify-content-center">
-    <div class="col-md-10">
-        <h3 class="fw-bold text-white mb-4"><i class="bi bi-collection-play me-2"></i>Library Saya</h3>
-        
-        <div class="card border-0 shadow-sm" style="background-color: #16181f; border-radius: 12px;">
-            <!-- Header Tab Navigasi -->
-            <div class="card-header border-bottom border-secondary p-0" style="background-color: #1e212b; border-radius: 12px 12px 0 0;">
-                <ul class="nav nav-pills nav-fill" id="libraryPills" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active rounded-0 fw-bold w-100" id="history-tab" data-bs-toggle="pill" data-bs-target="#history" type="button" role="tab" style="border-radius: 12px 0 0 0 !important;">🕒 Riwayat Baca</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link rounded-0 fw-bold w-100 text-muted" id="bookmark-tab" data-bs-toggle="pill" data-bs-target="#bookmark" type="button" role="tab" style="border-radius: 0 12px 0 0 !important;" onclick="this.classList.remove('text-muted'); document.getElementById('history-tab').classList.add('text-muted');">🔖 Bookmark</button>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Isi Konten -->
-            <div class="card-body p-4">
-                <div class="tab-content">
-                    
-                    <!-- TAB RIWAYAT -->
-                    <div class="tab-pane fade show active" id="history" role="tabpanel">
-                        <div class="list-group list-group-flush">
-                            @forelse($histories as $history)
-                                <a href="{{ route('chapter.read', ['slug' => $history->manga->slug, 'chapter_number' => $history->chapter->chapter_number]) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center bg-transparent text-white border-secondary py-3 px-0">
-                                    <div class="d-flex align-items-center">
-                                        <img src="{{ asset('storage/' . $history->manga->cover_image) }}" alt="Cover" class="rounded me-3" style="width: 50px; height: 70px; object-fit: cover;">
-                                        <div>
-                                            <h6 class="fw-bold mb-1">{{ $history->manga->title }}</h6>
-                                            <small class="text-primary">Melanjutkan Chapter {{ $history->chapter->chapter_number }}</small>
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">{{ $history->updated_at->diffForHumans() }}</small>
-                                </a>
-                            @empty
-                                <div class="text-center py-5 text-muted">Belum ada riwayat bacaan.</div>
-                            @endforelse
-                        </div>
-                    </div>
-
-                    <!-- TAB BOOKMARK -->
-                    <div class="tab-pane fade" id="bookmark" role="tabpanel">
-                        <div class="row row-cols-2 row-cols-md-4 g-3 mt-2">
-                            @forelse($bookmarks as $bookmark)
-                                <div class="col">
-                                    <div class="card bg-dark border-secondary h-100 manga-card">
-                                        <img src="{{ asset('storage/' . $bookmark->manga->cover_image) }}" class="card-img-top" alt="Cover" style="height: 250px; object-fit: cover;">
-                                        <div class="card-body p-2 text-center">
-                                            <h6 class="text-white small fw-bold text-truncate mb-2">{{ $bookmark->manga->title }}</h6>
-                                            <a href="{{ route('manga.show', $bookmark->manga->slug) }}" class="btn btn-outline-primary btn-sm w-100">Detail</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="col-12 text-center py-5 text-muted w-100">Belum ada komik yang di-bookmark.</div>
-                            @endforelse
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+<div class="container-fluid mt-4 mb-5">
+    
+    <!-- Header & Toggle View -->
+    <div class="d-flex justify-content-between align-items-end border-bottom border-secondary pb-3 mb-4">
+        <div>
+            <h2 class="fw-bold text-white mb-0">📚 Library Saya</h2>
+            <p class="text-muted mb-0 small">Kelola koleksi komik dan riwayat bacamu.</p>
         </div>
+        
+        <!-- Toggle View Mode (Seperti File Explorer) -->
+        <div class="btn-group shadow-sm" role="group">
+            <button type="button" class="btn btn-primary" id="btn-grid" onclick="setViewMode('grid')" title="Large Icons (Grid)">
+                🔲 Grid
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="btn-list" onclick="setViewMode('list')" title="Details (List)">
+                📄 List
+            </button>
+        </div>
+    </div>
+
+    @if(session('success'))
+        <div class="alert alert-success bg-success text-white border-0">{{ session('success') }}</div>
+    @endif
+
+    <!-- Nav Tabs untuk Bookmark & History -->
+    <ul class="nav nav-tabs border-secondary mb-4" id="libraryTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold text-white bg-dark border-secondary border-bottom-0" id="bookmark-tab" data-bs-toggle="tab" data-bs-target="#bookmark-pane" type="button" role="tab">
+                🔖 Bookmark
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold text-secondary border-secondary" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-pane" type="button" role="tab">
+                🕒 History Baca
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="libraryTabsContent">
+        
+        <!-- TAB 1: BOOKMARK -->
+        <div class="tab-pane fade show active" id="bookmark-pane" role="tabpanel">
+            
+            <!-- TAMPILAN GRID (Large Icons) -->
+            <div class="row g-3 view-grid">
+                @forelse($bookmarks as $bm)
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="card bg-dark border-secondary h-100 position-relative manga-card shadow-sm">
+                        <!-- Tombol Hapus Bookmark -->
+                        <form action="{{ route('bookmark.toggle', $bm->manga->id) }}" method="POST" class="position-absolute top-0 end-0 m-1 z-3">
+                            @csrf
+                            <button type="submit" class="btn btn-danger btn-sm rounded-circle p-1" style="width:28px; height:28px;" title="Hapus Bookmark" onclick="return confirm('Hapus komik ini dari bookmark?')">✖</button>
+                        </form>
+                        
+                        <a href="{{ route('manga.show', $bm->manga->slug) }}" class="text-decoration-none">
+                            <img src="{{ asset('storage/' . $bm->manga->cover_image) }}" class="card-img-top" style="height: 220px; object-fit: cover;" alt="Cover">
+                            <div class="card-body p-2 text-center">
+                                <h6 class="text-white mb-0 text-truncate small fw-bold">{{ $bm->manga->title }}</h6>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                @empty
+                    <p class="text-muted w-100 text-center py-5">Belum ada komik di bookmark.</p>
+                @endforelse
+            </div>
+
+            <!-- TAMPILAN LIST (Details) -->
+            <div class="list-group view-list" style="display: none;">
+                @forelse($bookmarks as $bm)
+                <div class="list-group-item bg-dark border-secondary text-white d-flex justify-content-between align-items-center mb-2 rounded shadow-sm">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ asset('storage/' . $bm->manga->cover_image) }}" style="width: 50px; height: 70px; object-fit: cover;" class="rounded me-3">
+                        <div>
+                            <a href="{{ route('manga.show', $bm->manga->slug) }}" class="text-white text-decoration-none fw-bold h5 mb-1 d-block">{{ $bm->manga->title }}</a>
+                            <small class="text-muted">Disimpan: {{ $bm->created_at->format('d M Y - H:i') }}</small>
+                        </div>
+                    </div>
+                    <form action="{{ route('bookmark.toggle', $bm->manga->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger btn-sm fw-bold rounded-pill px-3" onclick="return confirm('Hapus komik ini dari bookmark?')">Hapus</button>
+                    </form>
+                </div>
+                @empty
+                    <p class="text-muted w-100 text-center py-5">Belum ada komik di bookmark.</p>
+                @endforelse
+            </div>
+            
+            <!-- Pagination Bookmark -->
+            <div class="mt-4">{{ $bookmarks->links() }}</div>
+        </div>
+
+
+        <!-- TAB 2: HISTORY BACA -->
+        <div class="tab-pane fade" id="history-pane" role="tabpanel">
+            
+            <!-- TAMPILAN GRID (Large Icons) -->
+            <div class="row g-3 view-grid">
+                @forelse($histories as $history)
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="card bg-dark border-secondary h-100 position-relative manga-card shadow-sm">
+                        <a href="{{ route('chapter.read', ['slug' => $history->manga->slug, 'chapter_number' => $history->chapter->chapter_number]) }}" class="text-decoration-none">
+                            <img src="{{ asset('storage/' . $history->manga->cover_image) }}" class="card-img-top" style="height: 220px; object-fit: cover;" alt="Cover">
+                            <!-- Overlay Info Chapter -->
+                            <div class="position-absolute bottom-0 start-0 w-100 p-1" style="background: rgba(0,0,0,0.8);">
+                                <small class="text-warning fw-bold d-block text-center">Ch. {{ $history->chapter->chapter_number }}</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="p-1 text-center">
+                        <h6 class="text-white mb-0 text-truncate small">{{ $history->manga->title }}</h6>
+                        <small class="text-muted" style="font-size: 0.65rem;">{{ $history->updated_at->diffForHumans() }}</small>
+                    </div>
+                </div>
+                @empty
+                    <p class="text-muted w-100 text-center py-5">Belum ada riwayat membaca komik.</p>
+                @endforelse
+            </div>
+
+            <!-- TAMPILAN LIST (Details) -->
+            <div class="list-group view-list" style="display: none;">
+                @forelse($histories as $history)
+                <div class="list-group-item bg-dark border-secondary text-white d-flex justify-content-between align-items-center mb-2 rounded shadow-sm">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ asset('storage/' . $history->manga->cover_image) }}" style="width: 50px; height: 70px; object-fit: cover;" class="rounded me-3">
+                        <div>
+                            <a href="{{ route('chapter.read', ['slug' => $history->manga->slug, 'chapter_number' => $history->chapter->chapter_number]) }}" class="text-white text-decoration-none fw-bold h5 mb-1 d-block">
+                                {{ $history->manga->title }}
+                            </a>
+                            <span class="badge bg-primary text-white me-2">Chapter {{ $history->chapter->chapter_number }}</span>
+                            <small class="text-muted">Dibaca: {{ $history->updated_at->format('d M Y - H:i') }}</small>
+                        </div>
+                    </div>
+                    <a href="{{ route('chapter.read', ['slug' => $history->manga->slug, 'chapter_number' => $history->chapter->chapter_number]) }}" class="btn btn-outline-info btn-sm fw-bold rounded-pill px-3">
+                        Lanjut Baca
+                    </a>
+                </div>
+                @empty
+                    <p class="text-muted w-100 text-center py-5">Belum ada riwayat membaca komik.</p>
+                @endforelse
+            </div>
+
+            <!-- Pagination History -->
+            <div class="mt-4">{{ $histories->links() }}</div>
+        </div>
+
     </div>
 </div>
 
 <script>
-    document.getElementById('bookmark-tab').addEventListener('click', function() {
-        this.classList.remove('text-muted');
-        document.getElementById('history-tab').classList.add('text-muted');
-    });
-    document.getElementById('history-tab').addEventListener('click', function() {
-        this.classList.remove('text-muted');
-        document.getElementById('bookmark-tab').classList.add('text-muted');
+    // Menyimpan memori pilihan tampilan (Grid/List) ke Browser (Local Storage)
+    function setViewMode(mode) {
+        localStorage.setItem('library_view_mode', mode);
+        
+        const btnGrid = document.getElementById('btn-grid');
+        const btnList = document.getElementById('btn-list');
+        const viewGrids = document.querySelectorAll('.view-grid');
+        const viewLists = document.querySelectorAll('.view-list');
+
+        if (mode === 'list') {
+            btnGrid.classList.replace('btn-primary', 'btn-outline-secondary');
+            btnList.classList.replace('btn-outline-secondary', 'btn-primary');
+            viewGrids.forEach(el => el.style.setProperty('display', 'none', 'important'));
+            viewLists.forEach(el => el.style.setProperty('display', 'block', 'important'));
+        } else {
+            btnList.classList.replace('btn-primary', 'btn-outline-secondary');
+            btnGrid.classList.replace('btn-outline-secondary', 'btn-primary');
+            viewLists.forEach(el => el.style.setProperty('display', 'none', 'important'));
+            viewGrids.forEach(el => el.style.setProperty('display', 'flex', 'important'));
+        }
+    }
+
+    // Memuat tampilan saat halaman dibuka
+    document.addEventListener("DOMContentLoaded", function() {
+        const savedMode = localStorage.getItem('library_view_mode') || 'grid';
+        setViewMode(savedMode);
+
+        // Memperbaiki tab agar kembali ke tab semula setelah pindah halaman (Pagination)
+        const activeTab = localStorage.getItem('active_library_tab');
+        if (activeTab) {
+            let tabElement = new bootstrap.Tab(document.querySelector(activeTab));
+            tabElement.show();
+        }
+        document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function (e) {
+                localStorage.setItem('active_library_tab', '#' + e.target.id);
+            });
+        });
     });
 </script>
 @endsection

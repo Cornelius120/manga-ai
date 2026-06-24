@@ -1,9 +1,11 @@
+<!-- Kode ini diletakkan di resources/views/layout.blade.php -->
 <!DOCTYPE html>
 <html lang="id" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manga Online AI</title>
+    <title>{{ $webSetting->site_name ?? 'Manga-AI' }}</title>
+    <meta name="description" content="{{ $webSetting->site_description ?? 'Website baca komik terbaik' }}">
     <!-- Menggunakan Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
@@ -72,19 +74,19 @@
             </button>
 
             <!-- TENGAH: Logo Website -->
-            <a class="navbar-brand absolute-center fw-bold fs-4" href="/">
-                <span class="text-primary">Manga</span>-AI
-            </a>
+            <a class="navbar-brand fw-bold fs-4" href="/">
+            <span class="text-primary">{{ $webSetting->site_name ?? 'Manga-AI' }}</span>
+        </a>
             
             <!-- KANAN: Ikon Profil & Dropdown -->
             <div class="dropdown">
                 <a href="#" class="profile-icon shadow-sm" id="dropdownProfil" data-bs-toggle="dropdown" aria-expanded="false">
                     @auth
-    @if(Auth::user()->avatar)
-        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="rounded-circle w-100 h-100" style="object-fit: cover;" alt="Avatar">
-    @else
-        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-    @endif
+                        @if(Auth::user()->avatar)
+                            <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="rounded-circle w-100 h-100" style="object-fit: cover;" alt="Avatar">
+                        @else
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        @endif
                     @else
                         <!-- Menampilkan Ikon User generik jika belum login -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
@@ -101,7 +103,7 @@
                             <strong class="text-white">{{ Auth::user()->name }}</strong>
                         </li>
                         @if(Auth::user()->role == 'admin')
-                            <li><a class="dropdown-item fw-bold text-warning mt-2" href="{{ route('admin.manga.index') }}">Panel Admin</a></li>
+                            <li><a class="dropdown-item fw-bold text-warning mt-2" href="{{ route('admin.dashboard') }}">Panel Admin</a></li>
                         @endif
                         <li><a class="dropdown-item mt-1" href="{{ route('profile') }}">Profil Saya</a></li>
                         <li><hr class="dropdown-divider border-secondary"></li>
@@ -135,53 +137,86 @@
         </div>
         <div class="offcanvas-body">
             <ul class="navbar-nav fs-5 mt-3">
-    <!-- Menu Umum -->
-    <li class="nav-item mb-2">
-        <a class="nav-link px-3 py-2 rounded" href="/">Beranda Katalog</a>
-    </li>
-    <li class="nav-item mb-2">
-        <a class="nav-link px-3 py-2 rounded bg-primary text-white shadow-sm" href="{{ route('search') }}">Pencarian AI Semantik</a>
-    </li>
-    <li class="nav-item mb-2">
-        <a class="nav-link px-3 py-2 rounded text-white" href="{{ route('library') }}">Library Saya</a>
-    </li>
+                <!-- Menu Umum -->
+                <!-- Menu Umum -->
+                <li class="nav-item mb-2">
+                    <a class="nav-link px-3 py-2 rounded" href="/">Beranda Katalog</a>
+                </li>
+                <!-- Tambahkan Menu Pencarian Filter Biasa -->
+                <li class="nav-item mb-2">
+                    <a class="nav-link px-3 py-2 rounded text-white" href="{{ route('search') }}">🔍 Pencarian Filter</a>
+                </li>
+                <!-- Perbaiki Link Pencarian AI agar mengarah ke search.ai -->
+                <li class="nav-item mb-2">
+                    <a class="nav-link px-3 py-2 rounded bg-info text-dark fw-bold shadow-sm" href="{{ route('search.ai') }}">✨ Pencarian AI Semantik</a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link px-3 py-2 rounded text-white" href="{{ route('library') }}">Library Saya</a>
+                </li>
 
-    <!-- Menu Khusus Admin -->
-    @auth
-        @if(Auth::user()->role == 'admin')
-            <hr class="border-secondary my-3">
-            <li class="nav-item mb-2">
-                <span class="text-warning px-3 small fw-bold">PANEL ADMIN</span>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link px-3 py-2 rounded" href="{{ route('admin.manga.index') }}">Kelola Komik</a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link px-3 py-2 rounded" href="{{ route('admin.chapter.index') }}">Kelola Chapter</a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link px-3 py-2 rounded text-secondary" href="{{ route('admin.comment.index') }}">Kelola Komentar</a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link px-3 py-2 rounded text-secondary" href="{{ route('admin.ad.index') }}">Kelola Ads/Iklan</a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link px-3 py-2 rounded text-secondary" href="{{ route('admin.setting.index') }}">Pengaturan Web</a>
-            </li>
-        @endif
-    @endauth
-</ul>
+                <!-- Menu Khusus Admin -->
+                @auth
+                    @if(Auth::user()->role == 'admin')
+                        <hr class="border-secondary my-3">
+                        <li class="nav-item mb-2">
+                            <span class="text-warning px-3 small fw-bold">PANEL ADMIN</span>
+                        </li>
+                        <!-- Tambahkan baris Dashboard ini -->
+                        <li class="nav-item mb-2">
+                            <a class="nav-link px-3 py-2 rounded text-white bg-dark border border-secondary" href="{{ route('admin.dashboard') }}">📊 Dashboard Utama</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link px-3 py-2 rounded" href="{{ route('admin.manga.index') }}">Kelola Komik</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link px-3 py-2 rounded" href="{{ route('admin.chapter.index') }}">Kelola Chapter</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link px-3 py-2 rounded text-white" href="{{ route('admin.comment.index') }}">Kelola Komentar</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link px-3 py-2 rounded text-white" href="{{ route('admin.ad.index') }}">Kelola Ads/Iklan</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link px-3 py-2 rounded text-white" href="{{ route('admin.user.index') }}">Kelola Pengguna</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link px-3 py-2 rounded text-white" href="{{ route('admin.setting.index') }}">Pengaturan Web</a>
+                        </li>
+                    @endif
+                @endauth
+            </ul>
         </div>
     </div>
+
+    <!-- IKLAN HEADER (Tidak akan muncul di Panel Admin) -->
+    @if(isset($adHeader) && $adHeader && !request()->is('admin*'))
+    <div class="container mt-4 mb-4 text-center">
+        <small class="text-muted d-block mb-1" style="font-size: 0.7rem;">- Advertisement -</small>
+        <a href="{{ $adHeader->link_url }}" target="_blank">
+            <img src="{{ asset('storage/' . $adHeader->image_path) }}" class="img-fluid rounded shadow-sm border border-secondary" style="max-height: 120px; width: 100%; object-fit: cover;" alt="{{ $adHeader->title }}">
+        </a>
+    </div>
+    @endif
 
     <!-- Konten Utama -->
     <div class="container min-vh-100">
         @yield('content')
     </div>
 
+    <!-- IKLAN FOOTER (Tidak akan muncul di Panel Admin) -->
+    @if(isset($adFooter) && $adFooter && !request()->is('admin*'))
+    <div class="container mt-5 mb-3 text-center">
+        <small class="text-muted d-block mb-1" style="font-size: 0.7rem;">- Advertisement -</small>
+        <a href="{{ $adFooter->link_url }}" target="_blank">
+            <img src="{{ asset('storage/' . $adFooter->image_path) }}" class="img-fluid rounded shadow-sm border border-secondary" style="max-height: 120px; width: 100%; object-fit: cover;" alt="{{ $adFooter->title }}">
+        </a>
+    </div>
+    @endif
+
     <!-- Footer -->
     <footer class="text-center mt-5 py-4 border-top border-secondary">
-        <small class="text-muted">&copy; 2026 Manga Online by Miyamura. Universitas Bina Sarana Informatika.</small>
+        <small class="text-muted">&copy; {{ date('Y') }} {{ $webSetting->site_name ?? 'Manga-AI' }} by Miyamura. Universitas Bina Sarana Informatika.</small>
     </footer>
 
     <!-- Script Bootstrap -->

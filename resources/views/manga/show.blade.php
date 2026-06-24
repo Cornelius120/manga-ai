@@ -17,11 +17,24 @@
                 <img src="{{ $manga->cover_image ? asset('storage/' . $manga->cover_image) : 'https://via.placeholder.com/400x550' }}" class="img-fluid rounded shadow w-100 mb-3 border border-secondary border-opacity-50" style="aspect-ratio: 2/3; object-fit: cover;" alt="Cover {{ $manga->title }}">
                 
                 @auth
+                    @php
+                        // Cek apakah komik ini sudah ada di daftar bookmark milik user yang sedang login
+                        $isBookmarked = \App\Models\Bookmark::where('user_id', auth()->id())
+                                                            ->where('manga_id', $manga->id)
+                                                            ->exists();
+                    @endphp
+                    
                     <form action="{{ route('bookmark.toggle', $manga->id) }}" method="POST">
                         @csrf
-                        <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill shadow-sm py-2">
-                            🔖 Simpan ke Bookmark
-                        </button>
+                        @if($isBookmarked)
+                            <button type="submit" class="btn btn-success w-100 fw-bold rounded-pill shadow-sm py-2" title="Klik lagi untuk menghapus dari Bookmark">
+                                ✅ Tersimpan di Bookmark
+                            </button>
+                        @else
+                            <button type="submit" class="btn btn-outline-primary w-100 fw-bold rounded-pill shadow-sm py-2 bg-dark">
+                                🔖 Simpan ke Bookmark
+                            </button>
+                        @endif
                     </form>
                 @endauth
             </div>

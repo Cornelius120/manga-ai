@@ -14,11 +14,17 @@ class LibraryController extends Controller
     {
         $user_id = Auth::id();
         
-        // Mengambil data bookmark beserta info manganya
-        $bookmarks = Bookmark::with('manga')->where('user_id', $user_id)->latest()->get();
+        // Mengambil data bookmark beserta info manganya menggunakan Pagination (12 item per halaman)
+        $bookmarks = Bookmark::with('manga')
+            ->where('user_id', $user_id)
+            ->latest()
+            ->paginate(12, ['*'], 'bookmark_page');
         
-        // Mengambil riwayat baca terakhir beserta info manga dan chapter
-        $histories = ReadingHistory::with(['manga', 'chapter'])->where('user_id', $user_id)->orderBy('updated_at', 'desc')->get();
+        // Mengambil riwayat baca terakhir beserta info manga dan chapter menggunakan Pagination (12 item per halaman)
+        $histories = ReadingHistory::with(['manga', 'chapter'])
+            ->where('user_id', $user_id)
+            ->orderBy('updated_at', 'desc')
+            ->paginate(12, ['*'], 'history_page');
         
         return view('library.index', compact('bookmarks', 'histories'));
     }
